@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PRIVATE ACCESS / FOR HER</title>
+  <style>
+    :root {
+      --bg: #050505;
+      --bg-soft: #0b0b0b;
+      --panel: rgba(17,17,17,0.92);
+      --line: rgba(255,255,255,0.08);
+      --line-strong: rgba(255,255,255,0.16);
+      --text: #f3f3f3;
+      --muted: #9c9c9c;
+      --accent: #d6d6d6;
+      --danger: #b4b4b4;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: radial-gradient(circle at 20% 10%, rgba(255,255,255,0.03), transparent 30%),
+                  radial-gradient(circle at 80% 20%, rgba(255,255,255,0.02), transparent 25%),
+                  linear-gradient(180deg, #030303 0%, #090909 45%, #020202 100%);
+      color: var(--text);
+      font-family: Inter, Arial, Helvetica, sans-serif;
+      overflow-x: hidden;
+      letter-spacing: 0.02em;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.08;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+      background-size: 32px 32px;
+      z-index: 0;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background: repeating-linear-gradient(
+        to bottom,
+        rgba(255,255,255,0.012),
+        rgba(255,255,255,0.012) 1px,
+        transparent 1px,
+        transparent 3px
+      );
+      opacity: 0.18;
+      z-index: 0;
+    }
+
+    .grain {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.04;
+      z-index: 1;
+      background-image:
+        radial-gradient(circle, rgba(255,255,255,0.7) 0.5px, transparent 0.5px);
+      background-size: 7px 7px;
+      animation: grainShift 8s steps(10) infinite;
+    }
+
+    @keyframes grainShift {
+      0% { transform: translate(0,0); }
+      25% { transform: translate(2px,-1px); }
+      50% { transform: translate(-1px,2px); }
+      75% { transform: translate(1px,1px); }
+      100% { transform: translate(0,0); }
+    }
+
+    .preloader {
+      position: fixed;
+      inset: 0;
+      z-index: 999;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      transition: opacity 0.8s ease, visibility 0.8s ease;
+    }
+
+    .preloader.hidden {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .pre-card {
+      width: min(720px, 100%);
+      border: 1px solid var(--line-strong);
+      background: rgba(7,7,7,0.96);
+      padding: 28px;
+      text-align: center;
+      backdrop-filter: blur(10px);
+    }
+
+    .mono {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.32em;
+      color: var(--muted);
+    }
+
+    .pre-title {
+      margin-top: 18px;
+      font-size: clamp(2rem, 7vw, 6rem);
+      line-height: 0.95;
+      text-transform: uppercase;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+    }
+
+    .pre-sub {
+      margin-top: 18px;
+      color: var(--muted);
+      line-height: 1.8;
+      max-width: 520px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .gate-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .gate-input, .upload-label, .btn, .ghost-btn {
+      width: 100%;
+      min-height: 52px;
+      border: 1px solid var(--line-strong);
+      background: rgba(255,255,255,0.02);
+      color: var(--text);
+      padding: 0 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 12px;
+    }
+
+    .gate-input:focus { outline: none; border-color: rgba(255,255,255,0.3); }
+
+    .btn, .ghost-btn, .upload-label {
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: 0.25s ease;
+      text-decoration: none;
+    }
+
+    .btn:hover, .ghost-btn:hover, .upload-label:hover {
+      background: rgba(255,255,255,0.06);
+      border-color: rgba(255,255,255,0.24);
+    }
+
+    .btn.primary {
+      background: rgba(255,255,255,0.92);
+      color: #050505;
+      font-weight: 700;
+    }
+
+    .btn.primary:hover { background: #fff; }
+
+    #mainContent {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: 1.1s ease;
+      position: relative;
+      z-index: 2;
+    }
+
+    #mainContent.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .ambient-toggle {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      z-index: 10;
+      width: auto;
+      padding: 0 18px;
+    }
+
+    .container {
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    section {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding: 50px 0;
+    }
+
+    .panel {
+      width: 100%;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(12,12,12,0.94), rgba(7,7,7,0.92));
+      padding: clamp(20px, 4vw, 42px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .panel::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border: 1px solid rgba(255,255,255,0.03);
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.35em;
+      color: var(--muted);
+      margin-bottom: 18px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 24px;
+      align-items: end;
+    }
+
+    .hero-title {
+      font-size: clamp(3rem, 11vw, 9rem);
+      line-height: 0.88;
+      text-transform: uppercase;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+    }
+
+    .hero-copy {
+      color: var(--muted);
+      line-height: 1.9;
+      max-width: 620px;
+      margin-top: 22px;
+      font-size: 0.98rem;
+    }
+
+    .hero-side {
+      border-left: 1px solid var(--line);
+      padding-left: 24px;
+    }
+
+    .hero-meta {
+      display: grid;
+      gap: 14px;
+    }
+
+    .meta-item {
+      border-top: 1px solid var(--line);
+      padding-top: 12px;
+    }
+
+    .meta-label {
+      color: var(--muted);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.22em;
+      margin-bottom: 8px;
+    }
+
+    .meta-value {
+      font-size: 1rem;
+      line-height: 1.5;
+    }
+
+    .section-title {
+      font-size: clamp(2rem, 7vw, 5rem);
+      text-transform: uppercase;
+      line-height: 0.92;
+      font-weight: 900;
+      letter-spacing: 0.05em;
+      margin-bottom: 18px;
+    }
+
+    .section-copy {
+      color: var(--muted);
+      line-height: 1.9;
+      max-width: 780px;
+      margin-bottom: 26px;
+    }
+
+    .brutal-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+
+    .brutal-card {
+      border: 1px solid var(--line);
+      padding: 18px;
+      min-height: 240px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background: rgba(255,255,255,0.01);
+      transition: 0.3s ease;
+    }
+
+    .brutal-card:hover { transform: translateY(-4px); border-color: rgba(255,255,255,0.18); }
+
+    .card-index {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    .card-title {
+      font-size: 1.4rem;
+      text-transform: uppercase;
+      font-weight: 800;
+      line-height: 1;
+      margin-top: 16px;
+    }
+
+    .card-copy {
+      color: var(--muted);
+      line-height: 1.8;
+      font-size: 0.95rem;
+      margin-top: 16px;
+    }
+
+    .archive-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .media-slot {
+      border: 1px solid var(--line);
+      min-height: 360px;
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.005));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      text-align: center;
+      padding: 20px;
+    }
+
+    .media-slot img, .media-slot video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .controls-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    input[type="file"] { display: none; }
+
+    .voice-stack {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+      margin-top: 18px;
+    }
+
+    .voice-card {
+      border: 1px solid var(--line);
+      padding: 18px;
+      background: rgba(255,255,255,0.01);
+    }
+
+    .voice-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .voice-title {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+    }
+
+    .voice-player {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 14px;
+      align-items: center;
+      border: 1px solid var(--line);
+      padding: 14px;
+      min-height: 74px;
+    }
+
+    .play-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: 1px solid var(--line-strong);
+      background: rgba(255,255,255,0.03);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+
+    .wave {
+      display: flex;
+      align-items: end;
+      gap: 4px;
+      height: 34px;
+    }
+
+    .bar {
+      width: 5px;
+      background: rgba(255,255,255,0.55);
+      height: 10px;
+      animation: pulse 1.2s ease-in-out infinite;
+      transform-origin: bottom;
+    }
+
+    .bar:nth-child(2){ animation-delay: .1s; }
+    .bar:nth-child(3){ animation-delay: .2s; }
+    .bar:nth-child(4){ animation-delay: .3s; }
+    .bar:nth-child(5){ animation-delay: .4s; }
+    .bar:nth-child(6){ animation-delay: .5s; }
+    .bar:nth-child(7){ animation-delay: .6s; }
+    .bar:nth-child(8){ animation-delay: .7s; }
+
+    @keyframes pulse {
+      0%,100% { transform: scaleY(0.45); opacity: 0.35; }
+      50% { transform: scaleY(1.35); opacity: 1; }
+    }
+
+    .voice-player.paused .bar { animation-play-state: paused; opacity: 0.25; }
+
+    .time {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.12em;
+      min-width: 54px;
+      text-align: right;
+    }
+
+    .tg-circle-wrap {
+      margin-top: 18px;
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .tg-circle {
+      width: 100%;
+      max-width: 320px;
+      aspect-ratio: 1 / 1;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 1px solid var(--line-strong);
+      position: relative;
+      background: rgba(255,255,255,0.02);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto;
+    }
+
+    .tg-circle video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+    }
+
+    .circle-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle, rgba(0,0,0,0.2), rgba(0,0,0,0.55));
+      cursor: pointer;
+      transition: 0.3s ease;
+    }
+
+    .circle-overlay.hidden { opacity: 0; pointer-events: none; }
+
+    .circle-play {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.24);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      background: rgba(255,255,255,0.06);
+    }
+
+    .letter-box {
+      border: 1px solid var(--line);
+      padding: 24px;
+      background: rgba(255,255,255,0.01);
+      max-width: 900px;
+      line-height: 2;
+      color: #d9d9d9;
+      font-size: 1rem;
+    }
+
+    .final-wall {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .poster {
+      border: 1px solid var(--line);
+      padding: 24px;
+      min-height: 420px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background: rgba(255,255,255,0.01);
+    }
+
+    .poster-big {
+      font-size: clamp(2.4rem, 8vw, 7rem);
+      text-transform: uppercase;
+      line-height: 0.86;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+    }
+
+    .yesno {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .tiny {
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.8;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+    }
+
+    .reveal {
+      margin-top: 16px;
+      border: 1px solid var(--line);
+      padding: 18px;
+      display: none;
+      color: #d7d7d7;
+      line-height: 1.8;
+      background: rgba(255,255,255,0.015);
+    }
+
+    .reveal.show { display: block; }
+
+    .audio-list {
+      margin-top: 12px;
+      display: grid;
+      gap: 12px;
+    }
+
+    @media (max-width: 1024px) {
+      .hero-grid, .tg-circle-wrap, .final-wall, .voice-stack { grid-template-columns: 1fr; }
+      .brutal-grid { grid-template-columns: repeat(2, 1fr); }
+      .archive-grid { grid-template-columns: 1fr; }
+      .controls-grid { grid-template-columns: 1fr; }
+      .hero-side { border-left: none; padding-left: 0; border-top: 1px solid var(--line); padding-top: 18px; }
+    }
+
+    @media (max-width: 640px) {
+      .brutal-grid { grid-template-columns: 1fr; }
+      .gate-row, .yesno { grid-template-columns: 1fr; }
+      .voice-player { grid-template-columns: 1fr; }
+      .time { text-align: left; }
+    }
+  </style>
+</head>
+<body>
+  <div class="grain"></div>
+
+  <div class="preloader" id="preloader">
+    <div class="pre-card">
+      <div class="mono">Private Archive / Restricted Entry</div>
+      <div class="pre-title">Enter<br>the<br>feeling</div>
+      <p class="pre-sub">
+        Это не просто сайт. Это личный архив, собранный для одного человека.
+        Если ты та, для кого это сделано — введи код доступа и нажми enter.
+      </p>
+      <div class="gate-row">
+        <input id="accessCode" class="gate-input" type="password" placeholder="ENTER ACCESS CODE" />
+        <button class="btn primary" onclick="unlockSite()">Enter</button>
+      </div>
+      <p class="tiny" style="margin-top: 16px;">Подсказка: поменяй код в JS, чтобы она открыла это только сама.</p>
+    </div>
+  </div>
+
+  <button class="ghost-btn ambient-toggle" onclick="toggleAmbient()">Ambient: Off</button>
+  <audio id="ambientAudio" loop></audio>
+
+  <main id="mainContent">
+    <div class="container">
+      <section>
+        <div class="panel">
+          <div class="hero-grid">
+            <div>
+              <div class="eyebrow">Private Capsule / One Person Only</div>
+              <h1 class="hero-title">For <span id="girlName">HER NAME</span></h1>
+              <p class="hero-copy">
+                Я не хотел делать обычное признание. Не хотел открытку. Не хотел банальность.
+                Я хотел собрать пространство, которое выглядит как закрытый дроп, архив и личная
+                исповедь одновременно. Потому что ты для меня — не что-то обычное.
+              </p>
+              <div style="margin-top: 24px; display:flex; gap:12px; flex-wrap:wrap;">
+                <a class="btn" href="#essence">Open Archive</a>
+                <a class="ghost-btn" href="#voices">Voice Notes</a>
+              </div>
+            </div>
+            <div class="hero-side">
+              <div class="hero-meta">
+                <div class="meta-item">
+                  <div class="meta-label">Status</div>
+                  <div class="meta-value">Unreleased / Emotional / Real</div>
+                </div>
+                <div class="meta-item">
+                  <div class="meta-label">Collection</div>
+                  <div class="meta-value">Love Confession v4.0 — Dark Luxury Edition</div>
+                </div>
+                <div class="meta-item">
+                  <div class="meta-label">Intended For</div>
+                  <div class="meta-value">One girl. One feeling. No audience.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="essence">
+        <div class="panel">
+          <div class="eyebrow">Selected Reasons / Edited Memory</div>
+          <h2 class="section-title">Why You</h2>
+          <p class="section-copy">
+            Не “почему ты мне нравишься”, а почему именно ты выбиваешь меня из привычного состояния.
+            Здесь оставь не общие слова, а точные детали, за которые цепляется память.
+          </p>
+          <div class="brutal-grid">
+            <div class="brutal-card">
+              <div class="card-index">01 / Presence</div>
+              <div>
+                <div class="card-title">Your Silence</div>
+                <div class="card-copy">Даже когда ты молчишь, рядом с тобой ощущается больше смысла, чем в большинстве разговоров.</div>
+              </div>
+            </div>
+            <div class="brutal-card">
+              <div class="card-index">02 / Gesture</div>
+              <div>
+                <div class="card-title">Your Look</div>
+                <div class="card-copy">Есть взгляд, который невозможно забыть. У тебя он есть. И я попался на него окончательно.</div>
+              </div>
+            </div>
+            <div class="brutal-card">
+              <div class="card-index">03 / Signal</div>
+              <div>
+                <div class="card-title">Your Energy</div>
+                <div class="card-copy">Ты не просто красивая. Ты создаёшь вокруг себя атмосферу, из которой не хочется выходить.</div>
+              </div>
+            </div>
+            <div class="brutal-card">
+              <div class="card-index">04 / Final</div>
+              <div>
+                <div class="card-title">Just You</div>
+                <div class="card-copy">И, наверное, самая честная причина — потому что это ты. Этого уже достаточно.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="archive">
+        <div class="panel">
+          <div class="eyebrow">Archive Upload / Editorial Memory</div>
+          <h2 class="section-title">Memory Archive</h2>
+          <p class="section-copy">
+            Сюда можно загружать ваши фото и видео прямо из браузера. Подойдут зернистые кадры, ч/б, ночные силуэты,
+            зеркала, руки, размытые фрагменты — всё, что выглядит как личный fashion-архив.
+          </p>
+          <div class="archive-grid" id="memoryGrid">
+            <div class="media-slot">Slot 01<br>Upload Photo / Video</div>
+            <div class="media-slot">Slot 02<br>Upload Photo / Video</div>
+            <div class="media-slot">Slot 03<br>Upload Photo / Video</div>
+          </div>
+          <div class="controls-grid">
+            <label class="upload-label">Upload Slot 01<input type="file" accept="image/*,video/*" data-slot="0" class="memoryInput"></label>
+            <label class="upload-label">Upload Slot 02<input type="file" accept="image/*,video/*" data-slot="1" class="memoryInput"></label>
+            <label class="upload-label">Upload Slot 03<input type="file" accept="image/*,video/*" data-slot="2" class="memoryInput"></label>
+          </div>
+        </div>
+      </section>
+
+      <section id="voices">
+        <div class="panel">
+          <div class="eyebrow">Telegram Archive / Voice & Motion</div>
+          <h2 class="section-title">Voice Notes</h2>
+          <p class="section-copy">
+            Здесь можно загрузить несколько голосовых сообщений и один video circle как в Telegram.
+            Нажимаешь на play — и всё проигрывается прямо на сайте. Это один из самых сильных блоков.
+          </p>
+
+          <div class="voice-stack">
+            <div class="voice-card">
+              <div class="voice-header">
+                <div class="voice-title">Voice Messages / Playlist</div>
+                <label class="upload-label" style="width:auto; padding:0 18px;">Add Voice<input id="voiceUpload" type="file" accept="audio/*" multiple></label>
+              </div>
+              <div class="audio-list" id="voiceList"></div>
+            </div>
+
+            <div class="voice-card">
+              <div class="voice-header">
+                <div class="voice-title">Telegram Circle / Motion Fragment</div>
+                <label class="upload-label" style="width:auto; padding:0 18px;">Upload Circle<input id="circleUpload" type="file" accept="video/*"></label>
+              </div>
+              <div class="tg-circle-wrap">
+                <div class="tg-circle">
+                  <video id="circleVideo" playsinline></video>
+                  <div class="circle-overlay" id="circleOverlay" onclick="toggleCircleVideo()">
+                    <div class="circle-play">Play</div>
+                  </div>
+                </div>
+                <div>
+                  <div class="letter-box" style="max-width:none; min-height:auto;">
+                    <p>
+                      Этот круглый плеер специально сделан под вайб telegram video message.
+                      Загрузи сюда короткий кружочек — и это будет выглядеть как личный приватный фрагмент.
+                    </p>
+                    <br>
+                    <p class="tiny">Совет: лучше всего работают 5–20 секунд, тёмные кадры, close-up, движение, улыбка, взгляд.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="letter">
+        <div class="panel">
+          <div class="eyebrow">Direct Statement / No Filters</div>
+          <h2 class="section-title">What I Had To Say</h2>
+          <div class="letter-box">
+            Я не хотел прятать это в обычных сообщениях, мемах или случайных намёках.
+            В какой-то момент стало ясно: ты для меня перестала быть просто симпатией,
+            интересом или временной эмоцией.
+            <br><br>
+            Ты стала тем человеком, о котором я думаю дольше, чем хотел бы признавать.
+            Тем, рядом с кем даже тишина ощущается правильно. Тем, кого хочется не просто видеть,
+            а оставлять в своей реальности как можно дольше.
+            <br><br>
+            И если говорить совсем честно — мне уже не хочется делать вид, что это что-то “лёгкое”.
+            Это не лёгкое. Это настоящее.
+          </div>
+        </div>
+      </section>
+
+      <section id="final">
+        <div class="panel">
+          <div class="eyebrow">Final Reveal / Private Campaign</div>
+          <div class="final-wall">
+            <div class="poster">
+              <div class="tiny">End Frame / Main Statement</div>
+              <div class="poster-big">I Love<br>You</div>
+              <div class="tiny">No irony. No performance. Just truth.</div>
+            </div>
+            <div class="poster">
+              <div>
+                <div class="tiny">Decision Prompt</div>
+                <div class="section-title" style="font-size: clamp(1.8rem, 5vw, 3.8rem); margin-top: 12px;">Stay With Me?</div>
+                <p class="section-copy" style="margin-bottom: 0; max-width:none;">
+                  Не обязательно отвечать сразу. Но если после этого тебе стало теплее,
+                  значит я не зря собирал этот маленький личный мир для тебя.
+                </p>
+                <div class="yesno">
+                  <button class="btn primary" onclick="showAnswer('yes')">Yes</button>
+                  <button class="ghost-btn" onclick="showAnswer('no')">Need One More Date</button>
+                </div>
+                <div class="reveal" id="answerReveal"></div>
+              </div>
+              <div class="tiny">P.S. Сюда можно потом вставить ссылку на подарок, плейлист или дату.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const SECRET_CODE = 'blackheart'; // <- поменяй пароль здесь
+    const GIRL_NAME = 'HER NAME'; // <- поменяй имя здесь
+
+    // PRODUCTION FILE PATHS (положи файлы в папку assets/ рядом с index.html)
+    const FILES = {
+      ambient: 'assets/ambient.mp3',
+      voices: [
+        'assets/voice1.mp3',
+        'assets/voice2.mp3',
+        'assets/voice3.mp3'
+      ],
+      circle: 'assets/circle.mp4',
+      memories: [
+        'assets/memory1.jpg',
+        'assets/memory2.jpg',
+        'assets/memory3.mp4'
+      ]
+    };
+
+    document.getElementById('girlName').textContent = GIRL_NAME;
+
+    const ambientAudio = document.getElementById('ambientAudio');
+    const ambientBtn = document.querySelector('.ambient-toggle');
+    const preloader = document.getElementById('preloader');
+    const mainContent = document.getElementById('mainContent');
+    const voiceList = document.getElementById('voiceList');
+    const circleVideo = document.getElementById('circleVideo');
+    const circleOverlay = document.getElementById('circleOverlay');
+    const memorySlots = document.querySelectorAll('#memoryGrid .media-slot');
+
+    // Disable upload UI for production version
+    document.querySelectorAll('input[type="file"]').forEach(input => {
+      const label = input.closest('label');
+      if (label) label.style.display = 'none';
+    });
+
+    function unlockSite() {
+      const value = document.getElementById('accessCode').value.trim();
+      if (value === SECRET_CODE) {
+        preloader.classList.add('hidden');
+        mainContent.classList.add('show');
+      } else {
+        alert('Wrong code. This archive is private.');
+      }
+    }
+
+    document.getElementById('accessCode').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') unlockSite();
+    });
+
+    function toggleAmbient() {
+      if (!ambientAudio.src) {
+        alert('Файл ambient.mp3 не найден в папке assets');
+        return;
+      }
+      if (ambientAudio.paused) {
+        ambientAudio.play();
+        ambientBtn.textContent = 'Ambient: On';
+      } else {
+        ambientAudio.pause();
+        ambientBtn.textContent = 'Ambient: Off';
+      }
+    }
+
+    function formatTime(sec) {
+      if (!isFinite(sec)) return '00:00';
+      const m = Math.floor(sec / 60).toString().padStart(2, '0');
+      const s = Math.floor(sec % 60).toString().padStart(2, '0');
+      return `${m}:${s}`;
+    }
+
+    function renderMemorySlot(slot, path) {
+      const lower = path.toLowerCase();
+      if (lower.endsWith('.mp4') || lower.endsWith('.webm') || lower.endsWith('.mov')) {
+        slot.innerHTML = `<video src="${path}" controls muted playsinline></video>`;
+      } else {
+        slot.innerHTML = `<img src="${path}" alt="memory">`;
+      }
+    }
+
+    function createVoicePlayer(path, index) {
+      const fileName = path.split('/').pop();
+      const wrapper = document.createElement('div');
+      wrapper.className = 'voice-player paused';
+      wrapper.style.gridTemplateColumns = 'auto 1fr auto';
+      wrapper.style.rowGap = '10px';
+
+      const audio = document.createElement('audio');
+      audio.src = path;
+      audio.preload = 'metadata';
+
+      const play = document.createElement('button');
+      play.className = 'play-btn';
+      play.textContent = 'Play';
+
+      const waveWrap = document.createElement('div');
+      waveWrap.style.display = 'grid';
+      waveWrap.style.gap = '8px';
+
+      const wave = document.createElement('div');
+      wave.className = 'wave';
+      for (let i = 0; i < 8; i++) {
+        const bar = document.createElement('div');
+        bar.className = 'bar';
+        wave.appendChild(bar);
+      }
+
+      const progress = document.createElement('div');
+      progress.style.height = '4px';
+      progress.style.border = '1px solid rgba(255,255,255,0.08)';
+      progress.style.position = 'relative';
+      progress.style.cursor = 'pointer';
+      progress.style.background = 'rgba(255,255,255,0.03)';
+
+      const fill = document.createElement('div');
+      fill.style.position = 'absolute';
+      fill.style.left = '0';
+      fill.style.top = '0';
+      fill.style.bottom = '0';
+      fill.style.width = '0%';
+      fill.style.background = 'rgba(255,255,255,0.7)';
+      progress.appendChild(fill);
+
+      waveWrap.appendChild(wave);
+      waveWrap.appendChild(progress);
+
+      const time = document.createElement('div');
+      time.className = 'time';
+      time.textContent = '00:00';
+
+      audio.addEventListener('loadedmetadata', () => {
+        time.textContent = formatTime(audio.duration);
+      });
+
+      audio.addEventListener('timeupdate', () => {
+        const pct = audio.duration ? (audio.currentTime / audio.duration) * 100 : 0;
+        fill.style.width = `${pct}%`;
+        time.textContent = `${formatTime(audio.currentTime)} / ${formatTime(audio.duration)}`;
+      });
+
+      progress.addEventListener('click', (e) => {
+        const rect = progress.getBoundingClientRect();
+        const ratio = (e.clientX - rect.left) / rect.width;
+        if (audio.duration) audio.currentTime = Math.max(0, Math.min(audio.duration, ratio * audio.duration));
+      });
+
+      audio.addEventListener('ended', () => {
+        play.textContent = 'Play';
+        wrapper.classList.add('paused');
+        fill.style.width = '0%';
+        time.textContent = formatTime(audio.duration);
+      });
+
+      play.addEventListener('click', () => {
+        document.querySelectorAll('#voiceList audio').forEach(a => {
+          if (a !== audio) a.pause();
+        });
+        document.querySelectorAll('#voiceList .play-btn').forEach(btn => {
+          if (btn !== play) btn.textContent = 'Play';
+        });
+        document.querySelectorAll('#voiceList .voice-player').forEach(p => {
+          if (p !== wrapper) p.classList.add('paused');
+        });
+
+        if (audio.paused) {
+          audio.play();
+          play.textContent = 'Pause';
+          wrapper.classList.remove('paused');
+        } else {
+          audio.pause();
+          play.textContent = 'Play';
+          wrapper.classList.add('paused');
+        }
+      });
+
+      wrapper.appendChild(play);
+      wrapper.appendChild(waveWrap);
+      wrapper.appendChild(time);
+      wrapper.appendChild(audio);
+
+      const card = document.createElement('div');
+      card.className = 'voice-card';
+      card.innerHTML = `<div class="voice-title">Voice ${String(index + 1).padStart(2, '0')} / ${fileName}</div>`;
+      card.appendChild(wrapper);
+      return card;
+    }
+
+    function renderVoices() {
+      voiceList.innerHTML = '';
+      FILES.voices.forEach((path, index) => {
+        voiceList.appendChild(createVoicePlayer(path, index));
+      });
+    }
+
+    function renderCircle() {
+      circleVideo.src = FILES.circle;
+      circleVideo.load();
+      circleOverlay.classList.remove('hidden');
+    }
+
+    function toggleCircleVideo() {
+      if (!circleVideo.src) return;
+      if (circleVideo.paused) {
+        circleVideo.play();
+        circleOverlay.classList.add('hidden');
+      } else {
+        circleVideo.pause();
+        circleOverlay.classList.remove('hidden');
+      }
+    }
+
+    circleVideo.addEventListener('click', toggleCircleVideo);
+    circleVideo.addEventListener('ended', () => {
+      circleOverlay.classList.remove('hidden');
+    });
+
+    function showAnswer(type) {
+      const box = document.getElementById('answerReveal');
+      box.classList.add('show');
+      if (type === 'yes') {
+        box.innerHTML = 'Тогда это лучший исход, который я мог представить. И, кажется, это только начало. 🖤';
+      } else {
+        box.innerHTML = 'Это честный ответ. Значит, мне нужен ещё один сильный вечер, чтобы убедить тебя окончательно.';
+      }
+    }
+
+    const finalSection = document.querySelector('#final .panel');
+    const hiddenBlock = document.createElement('div');
+    hiddenBlock.style.marginTop = '18px';
+    hiddenBlock.innerHTML = `
+      <button class="ghost-btn" onclick="toggleSecret()" style="width:100%;">Open Hidden Layer</button>
+      <div class="reveal" id="secretReveal">Сюда вставь ссылку на подарок, закрытый плейлист, бронь, дату или secret message.</div>
+    `;
+    finalSection.appendChild(hiddenBlock);
+
+    function toggleSecret() {
+      document.getElementById('secretReveal').classList.toggle('show');
+    }
+
+    // INIT PRODUCTION ASSETS
+    window.addEventListener('load', () => {
+      ambientAudio.src = FILES.ambient;
+      renderVoices();
+      renderCircle();
+      FILES.memories.forEach((path, index) => {
+        if (memorySlots[index]) renderMemorySlot(memorySlots[index], path);
+      });
+    });
+  </script>
+</body>
+</html>
